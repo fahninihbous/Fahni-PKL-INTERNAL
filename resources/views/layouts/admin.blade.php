@@ -1,8 +1,3 @@
-{{-- ================================================
-     FILE: resources/views/layouts/admin.blade.php
-     FUNGSI: Master layout untuk halaman admin
-     ================================================ --}}
-
 <!DOCTYPE html>
 <html lang="id">
 <head>

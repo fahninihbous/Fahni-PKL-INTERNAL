@@ -96,9 +96,9 @@ Auth::routes();
 // ================================================
 // ROUTE PUBLIK (Bisa diakses siapa saja)
 // ================================================
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 // ↑ Halaman utama, tidak perlu login
 
 // ================================================
@@ -220,4 +220,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::delete('/profile/avatar', [ProfileController::class, 'deleteAvatar'])->name('profile.avatar.destroy');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+});
+Route::get('/admin/dashboard', function () {
+    return view('admin.dashboard');
 });
