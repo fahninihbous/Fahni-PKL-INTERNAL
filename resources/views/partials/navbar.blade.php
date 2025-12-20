@@ -6,9 +6,9 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
     <div class="container">
         {{-- Logo & Brand --}}
-        <a class="navbar-brand text-primary" href="{{ route('home') }}">
-            <i class="bi bi-bag-heart-fill me-2"></i>
-            TokoOnline
+        <a class="navbar-brand text-dark" href="{{ route('home') }}">
+            <i class="bi bi-bicycle fs-3"></i>
+            Harley Davidson
         </a>
 
         {{-- Mobile Toggle --}}
