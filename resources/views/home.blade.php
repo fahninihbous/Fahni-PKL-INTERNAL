@@ -25,7 +25,7 @@
                     </a>
                 </div>
                 <div class="col-lg-6 d-none d-lg-block text-center">
-                    <img src="{{ asset('images/delahaye-135.jpg ') }}"
+                    <img src="{{ asset('images/png-transparent-harley-davidson-evolution-engine-motorcycle-harley-davidson-shovelhead-engine-softail-motorcycle-motorcycle-auto-part-engine-removebg-preview.png') }}"
                          alt="Shopping" class="img-fluid" style="max-height: 400px;">
                 </div>
             </div>

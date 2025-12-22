@@ -1,3 +1,8 @@
+{{-- ================================================
+     FILE: resources/views/layouts/admin.blade.php
+     FUNGSI: Master layout untuk halaman admin
+================================================ --}}
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -73,14 +78,8 @@
                         <a href="{{ route('admin.orders.index') }}"
                            class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
                             <i class="bi bi-receipt me-2"></i> Pesanan
-                            {{-- Logic PHP di View ini hanya untuk contoh.
-                                 Best Practice: Gunakan View Composer atau inject variable dari Controller.
-                                 Jangan query database langsung di Blade view di production app! --}}
-                            @php
-                                $pendingCount = \App\Models\Order::where('status', 'pending')
-                                    ->where('payment_status', 'paid')->count();
-                            @endphp
-                            @if($pendingCount > 0)
+                            {{-- Badge pending orders --}}
+                            @if(isset($pendingCount) && $pendingCount > 0)
                                 <span class="badge bg-warning text-dark ms-auto">{{ $pendingCount }}</span>
                             @endif
                         </a>
@@ -98,7 +97,7 @@
                     </li>
 
                     <li class="nav-item">
-                        <a href="{{ route('admin.reports.sales') }}"
+                        <a href="{{ route('admin.reports.sales') ?? '#' }}"
                            class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
                             <i class="bi bi-graph-up me-2"></i> Laporan Penjualan
                         </a>
@@ -110,7 +109,7 @@
             <div class="p-3 border-top border-secondary">
                 <div class="d-flex align-items-center text-white">
                     <img src="{{ auth()->user()->avatar_url }}"
-                         class="rounded-circle me-2" width="36" height="36">
+                         class="rounded-circle me-2" width="36" height="36" alt="Avatar">
                     <div class="flex-grow-1">
                         <div class="small fw-medium">{{ auth()->user()->name }}</div>
                         <div class="small text-muted">Administrator</div>

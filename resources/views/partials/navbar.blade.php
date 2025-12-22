@@ -7,7 +7,7 @@
     <div class="container">
         {{-- Logo & Brand --}}
         <a class="navbar-brand text-dark" href="{{ route('home') }}">
-            <i class="bi bi-bicycle fs-3"></i>
+            <i class="bi bi-lightning-charge fs-3"></i>
             Harley Davidson
         </a>
 
@@ -59,7 +59,7 @@
                     {{-- Cart --}}
                     <li class="nav-item">
                         <a class="nav-link position-relative" href="{{ route('cart.index') }}">
-                            <i class="bi bi-cart3"></i>
+                            <i class="bi bi-cart"></i>
                             @php
                                 $cartCount = auth()->user()->cart?->items()->count() ?? 0;
                             @endphp
