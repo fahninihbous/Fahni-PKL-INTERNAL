@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="row">
-    <div class="col-lg-8">
+    <div class="col-lg-12">
         {{-- Flash Message --}}
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show">
@@ -133,7 +133,7 @@
 
 {{-- CREATE MODAL --}}
 <div class="modal fade" id="createModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <form class="modal-content" action="{{ route('admin.categories.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="modal-header">

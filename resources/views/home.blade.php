@@ -9,7 +9,7 @@
 
 @section('content')
     {{-- Hero Section --}}
-    <section class="hero-gradient text-white py-5">
+    <section class="bg-secondary text-white py-5">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
