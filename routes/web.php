@@ -29,6 +29,7 @@ use App\Http\Middleware\AdminMiddleware;
 */
 Auth::routes();
 
+
 /*
 |--------------------------------------------------------------------------
 | HALAMAN PUBLIK (TANPA LOGIN)

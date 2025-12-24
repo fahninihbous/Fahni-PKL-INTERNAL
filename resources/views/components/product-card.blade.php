@@ -29,5 +29,6 @@
                 <p class="fw-bold text-primary mb-0">{{ $product->formatted_price }}</p>
             @endif
         </div>
+        
     </div>
 </div>
