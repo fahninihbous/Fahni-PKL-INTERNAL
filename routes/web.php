@@ -19,6 +19,8 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\PaymentController;
+
 
 use App\Http\Middleware\AdminMiddleware;
 
@@ -140,4 +142,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Route tambahan untuk AJAX Image Handling (jika diperlukan)
     // ...
+});
+Route::middleware('auth')->group(function () {
+    // ... routes lainnya
+
+    // Payment Routes
+    Route::get('/orders/{order}/pay', [PaymentController::class, 'show'])
+        ->name('orders.pay');
+    Route::get('/orders/{order}/success', [PaymentController::class, 'success'])
+        ->name('orders.success');
+    Route::get('/orders/{order}/pending', [PaymentController::class, 'pending'])
+        ->name('orders.pending');
 });
