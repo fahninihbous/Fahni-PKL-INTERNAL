@@ -23,6 +23,7 @@ use App\Http\Controllers\PaymentController;
 
 
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Controllers\MidtransNotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -114,6 +115,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    // 
 });
 
 Route::middleware(['auth', AdminMiddleware::class])
@@ -128,10 +130,7 @@ Route::middleware(['auth', AdminMiddleware::class])
             ->name('reports.sales');
     });
 // routes/web.php
-Route::prefix('admin')->middleware(['auth', 'admin'])->group(function() {
-    Route::get('users', [\App\Http\Controllers\Admin\UserController::class, 'index'])
-         ->name('admin.users.index');
-});
+
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Kategori
@@ -139,6 +138,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Produk
     Route::resource('products', ProductController::class);
+
+    Route::get('/user', [AdminController::class, 'index'])->name('users.index');
+Route::delete('/user/{id}', [AdminController::class, 'destroy'])->name('users.destroy');
 
     // Route tambahan untuk AJAX Image Handling (jika diperlukan)
     // ...
@@ -153,4 +155,15 @@ Route::middleware('auth')->group(function () {
         ->name('orders.success');
     Route::get('/orders/{order}/pending', [PaymentController::class, 'pending'])
         ->name('orders.pending');
+// Pastikan diletakkan di dalam prefix admin jika ada
+Route::patch('/admin/orders/{id}/update-status', [OrderController::class, 'updateStatus'])
+     ->name('admin.orders.update-status');
 });
+// routes/web.php
+// ============================================================
+// MIDTRANS WEBHOOK
+// Route ini HARUS public (tanpa auth middleware)
+// Karena diakses oleh SERVER Midtrans, bukan browser user
+// ============================================================
+Route::post('midtrans/notification', [MidtransNotificationController::class, 'handle'])
+    ->name('midtrans.notification');

@@ -4,50 +4,42 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Services\MidtransService;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    /**
+     * Menampilkan daftar pesanan milik user yang sedang login.
+     */
     public function index()
     {
+        // PENTING: Jangan gunakan Order::all() !
+        // Kita hanya mengambil order milik user yg sedang login menggunakan relasi hasMany.
+        // auth()->user()->orders() akan otomatis memfilter: WHERE user_id = current_user_id
         $orders = auth()->user()->orders()
-            ->with(['items.product'])
-            ->latest()
+            ->with(['items.product']) // Eager Load nested: Order -> OrderItems -> Product
+            ->latest() // Urutkan dari pesanan terbaru
             ->paginate(10);
 
         return view('orders.index', compact('orders'));
     }
 
-    public function show(Order $order, MidtransService $midtrans)
+    /**
+     * Menampilkan detail satu pesanan.
+     */
+    public function show(Order $order)
     {
-        // 🔐 Security
+        // 1. Authorize (Security Check)
+        // User A TIDAK BOLEH melihat pesanan User B.
+        // Kita cek apakah ID pemilik order sama dengan ID user yang login.
         if ($order->user_id !== auth()->id()) {
-            abort(403);
+            abort(403, 'Anda tidak memiliki akses ke pesanan ini.');
         }
 
-        // Load relasi
+        // 2. Load relasi detail
+        // Kita butuh data items dan gambar produknya untuk ditampilkan di invoice view.
         $order->load(['items.product', 'items.product.primaryImage']);
 
-        // DEFAULT
-        $snapToken = null;
-
-        // HANYA BUAT TOKEN JIKA PENDING
-        if ($order->status === 'pending') {
-
-            // Pakai token lama jika sudah ada
-            if ($order->snap_token) {
-                $snapToken = $order->snap_token;
-            } else {
-                // Buat token baru
-                $snapToken = $midtrans->createSnapToken($order);
-
-                // Simpan ke DB
-                $order->update([
-                    'snap_token' => $snapToken
-                ]);
-            }
-        }
-
-        return view('orders.show', compact('order', 'snapToken'));
+        return view('orders.show', compact('order'));
     }
 }

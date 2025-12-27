@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Order;
+use Illuminate\Support\Facades\Redirect;
 
 class AdminController extends Controller
 {
@@ -14,9 +15,12 @@ class AdminController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        
-    }
+{
+    // Ubah get() menjadi paginate(jumlah_data)
+    $users = User::latest()->paginate(10); 
+    
+    return view('admin.users.index', compact('users'));
+}
     public function dashboard()
     {
         $stats =[
@@ -79,6 +83,8 @@ class AdminController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $user = User::findOrFail($id);
+        $user->delete();
+        return redirect()->route('admin.users.index')->with('succes', 'user deleted successfully');
     }
 }
