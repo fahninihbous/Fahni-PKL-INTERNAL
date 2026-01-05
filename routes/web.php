@@ -11,16 +11,18 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\Admin\ReportController;
 
 use App\Http\Controllers\Auth\GoogleController;
 
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\DashboardController; // ✅ TAMBAH INI
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\PaymentController;
-
 
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\MidtransNotificationController;
@@ -31,7 +33,6 @@ use App\Http\Controllers\MidtransNotificationController;
 |--------------------------------------------------------------------------
 */
 Auth::routes();
-
 
 /*
 |--------------------------------------------------------------------------
@@ -71,15 +72,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile/avatar', [ProfileController::class, 'deleteAvatar'])->name('profile.avatar.destroy');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
     Route::put('/profile/email', [ProfileController::class, 'updateEmail'])->name('profile.email.update');
-    // 1. Route untuk Verifikasi Email (Fix error verification.send)
-    Route::post('/email/verification-notification', [ProfileController::class, 'sendVerification'])
-        ->name('verification.send');    
 
-    // 2. Route untuk Unlink Google (Fix error profile.google.unlink)
-    // Pastikan kamu punya fungsi unlinkGoogle di ProfileController nanti
+    Route::post('/email/verification-notification', [ProfileController::class, 'sendVerification'])
+        ->name('verification.send');
+
     Route::delete('/profile/google/unlink', [ProfileController::class, 'unlinkGoogle'])
         ->name('profile.google.unlink');
-
 
     // Cart
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -102,8 +100,11 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
-    // Dashboard
-    Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+    // ❌ SEBELUM
+    // Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+
+    // ✅ DIGANTI (INI SAJA YANG DIUBAH)
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Produk CRUD
     Route::resource('products', AdminProductController::class);
@@ -114,8 +115,8 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
     // Manajemen Pesanan
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
-    Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
-    // 
+    Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])
+        ->name('orders.updateStatus');
 });
 
 Route::middleware(['auth', AdminMiddleware::class])
@@ -123,30 +124,31 @@ Route::middleware(['auth', AdminMiddleware::class])
     ->name('admin.')
     ->group(function () {
 
-        Route::get('/dashboard', [AdminController::class, 'dashboard'])
+        // ❌ SEBELUM
+        // Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+
+        // ✅ DIGANTI (INI JUGA SAJA)
+        Route::get('/dashboard', [DashboardController::class, 'index'])
             ->name('dashboard');
 
         Route::get('/reports/sales', [ReportController::class, 'sales'])
             ->name('reports.sales');
-    });
-// routes/web.php
 
+        Route::get('/reports/export-sales', [ReportController::class, 'exportSales'])->name('reports.export-sales');
+    });
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Kategori
-    Route::resource('categories', CategoryController::class)->except(['show']); // Kategori biasanya tidak butuh show detail page
+    Route::resource('categories', CategoryController::class)->except(['show']);
 
     // Produk
     Route::resource('products', ProductController::class);
 
     Route::get('/user', [AdminController::class, 'index'])->name('users.index');
-Route::delete('/user/{id}', [AdminController::class, 'destroy'])->name('users.destroy');
-
-    // Route tambahan untuk AJAX Image Handling (jika diperlukan)
-    // ...
+    Route::delete('/user/{id}', [AdminController::class, 'destroy'])->name('users.destroy');
 });
+
 Route::middleware('auth')->group(function () {
-    // ... routes lainnya
 
     // Payment Routes
     Route::get('/orders/{order}/pay', [PaymentController::class, 'show'])
@@ -155,15 +157,18 @@ Route::middleware('auth')->group(function () {
         ->name('orders.success');
     Route::get('/orders/{order}/pending', [PaymentController::class, 'pending'])
         ->name('orders.pending');
-// Pastikan diletakkan di dalam prefix admin jika ada
-Route::patch('/admin/orders/{id}/update-status', [OrderController::class, 'updateStatus'])
-     ->name('admin.orders.update-status');
+
+    Route::patch('/admin/orders/{id}/update-status', [OrderController::class, 'updateStatus'])
+        ->name('admin.orders.update-status');
 });
-// routes/web.php
-// ============================================================
-// MIDTRANS WEBHOOK
-// Route ini HARUS public (tanpa auth middleware)
-// Karena diakses oleh SERVER Midtrans, bukan browser user
-// ============================================================
+
+/*
+|--------------------------------------------------------------------------
+| MIDTRANS WEBHOOK
+|--------------------------------------------------------------------------
+*/
 Route::post('midtrans/notification', [MidtransNotificationController::class, 'handle'])
     ->name('midtrans.notification');
+
+// Batasi 5 request per menit
+Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1');

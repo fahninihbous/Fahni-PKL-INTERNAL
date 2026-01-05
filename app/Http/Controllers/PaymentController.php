@@ -10,32 +10,62 @@ use Illuminate\Http\Request;
 class PaymentController extends Controller
 {
     /**
-     * Mengambil Snap Token untuk order ini (API Endpoint).
-     * Dipanggil via AJAX dari frontend saat user klik "Bayar".
+     * Ambil Snap Token Midtrans (dipanggil via AJAX / frontend)
      */
     public function getSnapToken(Order $order, MidtransService $midtransService)
     {
-        // 1. Authorization: Pastikan user adalah pemilik order
+        // Pastikan user pemilik order
         if ($order->user_id !== auth()->id()) {
             abort(403);
         }
 
-        // 2. Cek apakah order sudah dibayar
+        // Jika sudah dibayar, stop
         if ($order->payment_status === 'paid') {
-            return response()->json(['error' => 'Pesanan sudah dibayar.'], 400);
+            return response()->json([
+                'error' => 'Pesanan sudah dibayar.'
+            ], 400);
         }
 
         try {
-            // 3. Generate Snap Token dari Midtrans
+            // Generate Snap Token
             $snapToken = $midtransService->createSnapToken($order);
 
-            // 4. Simpan token ke database untuk referensi
-            $order->update(['snap_token' => $snapToken]);
+            // Simpan token ke DB
+            $order->update([
+                'snap_token' => $snapToken
+            ]);
 
-            // 5. Kirim token ke frontend
-            return response()->json(['token' => $snapToken]);
+            return response()->json([
+                'token' => $snapToken
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
         }
+    }
+
+    /**
+     * Halaman sukses setelah pembayaran
+     */
+    public function success(Order $order)
+    {
+        if ($order->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        return view('payments.success', compact('order'));
+    }
+
+    /**
+     * Halaman pending (menunggu pembayaran)
+     */
+    public function pending(Order $order)
+    {
+        if ($order->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        return view('payments.pending', compact('order'));
     }
 }
