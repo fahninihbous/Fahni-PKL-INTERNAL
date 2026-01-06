@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/MidtransNotificationController.php
 
 namespace App\Http\Controllers;
 
@@ -15,17 +14,12 @@ class MidtransNotificationController extends Controller
      * Handle incoming webhook notification from Midtrans.
      * URL: POST /midtrans/notification
      */
-    /**
-     * Handle incoming webhook notification from Midtrans.
-     * URL: POST /midtrans/notification
-     * Access: Public (Midtrans Server)
-     */
     public function handle(Request $request)
     {
         // 1. Ambil data notifikasi
         $payload = $request->all();
 
-        // Log untuk debugging (Cev storage/logs/laravel.log jika ada masalah)
+        // Log untuk debugging
         Log::info('Midtrans Notification Received', $payload);
 
         // 2. Extract Data Penting
@@ -44,28 +38,12 @@ class MidtransNotificationController extends Controller
             return response()->json(['message' => 'Invalid payload'], 400);
         }
 
-        // ============================================================
-        // 4. VALIDASI SIGNATURE KEY (KRITIS!)
-        // ============================================================
-        // Ini adalah lapisan keamanan utama. Kita harus men-generate ulang
-        // signature di sisi kita dan membandingkannya dengan kiriman Midtrans.
-        // Rumus: SHA512(order_id + status_code + gross_amount + ServerKey)
-        // ============================================================
+        // 4. VALIDASI SIGNATURE KEY
         $serverKey = config('midtrans.server_key');
-
-        // Buat string hash
-        $expectedSignature = hash(
-            'sha512',
-            $orderId . $statusCode . $grossAmount . $serverKey
-        );
+        $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
 
         if ($signatureKey !== $expectedSignature) {
-            // Jika beda, berarti request PALSU (potensi serangan hacker)
-            Log::warning('Midtrans Notification: Invalid signature', [
-                'order_id' => $orderId,
-                'received' => $signatureKey,
-                'expected' => $expectedSignature,
-            ]);
+            Log::warning('Midtrans Notification: Invalid signature', ['order_id' => $orderId]);
             return response()->json(['message' => 'Invalid signature'], 403);
         }
 
@@ -77,21 +55,14 @@ class MidtransNotificationController extends Controller
             return response()->json(['message' => 'Order not found'], 404);
         }
 
-        // ============================================================
-        // 6. IDEMPOTENCY CHECK & CONCURRENCY
-        // ============================================================
-        // Midtrans bisa mengirim notifikasi yang sama berkali-kali (retry mechanism).
-        // Kita harus pastikan logika kita aman jika dipanggil double.
-        // Jika order sudah berstatus final (processing/shipped/delivered), stop.
-        // ============================================================
+        // 6. IDEMPOTENCY CHECK
         if (in_array($order->status, ['processing', 'shipped', 'delivered', 'cancelled'])) {
             Log::info("Midtrans Notification: Order already processed", ['order_id' => $orderId]);
             return response()->json(['message' => 'Order already processed'], 200);
         }
 
         // 7. Update Data Tambahan di Payment Record
-        // Simpan transaction_id dari Midtrans untuk referensi refund nanti
-        $payment = $order->payment;
+        $payment = $order->payment; // Pastikan relasi 'payment' ada di model Order
         if ($payment) {
             $payment->update([
                 'midtrans_transaction_id' => $transactionId,
@@ -100,16 +71,10 @@ class MidtransNotificationController extends Controller
             ]);
         }
 
-        // ============================================================
         // 8. MAPPING STATUS TRANSAKSI
-        // ============================================================
-        // Logika utama penentuan nasib order ada di sini.
-        // ============================================================
         switch ($transactionStatus) {
             case 'capture':
-                // Khusus Kartu Kredit (Authorize & Capture)
                 if ($fraudStatus === 'challenge') {
-                    // Transaksi dicurigai fraud oleh FDS Midtrans -> Review
                     $this->handlePending($order, $payment, 'Menunggu review fraud');
                 } else {
                     $this->handleSuccess($order, $payment);
@@ -117,45 +82,25 @@ class MidtransNotificationController extends Controller
                 break;
 
             case 'settlement':
-                // Pembayaran sukses (Bank Transfer, E-Wallet, dll)
                 $this->handleSuccess($order, $payment);
                 break;
 
             case 'pending':
-                // User belum bayar / Menunggu pembayaran
                 $this->handlePending($order, $payment, 'Menunggu pembayaran');
                 break;
 
             case 'deny':
-                // Pembayaran ditolak oleh bank/provider
-                $this->handleFailed($order, $payment, 'Pembayaran ditolak');
-                break;
-
             case 'expire':
-                // Token expired (tidak dibayar tepat waktu)
-                $this->handleFailed($order, $payment, 'Pembayaran kadaluarsa');
-                break;
-
             case 'cancel':
-                // Dibatalkan user/admin
-                $this->handleFailed($order, $payment, 'Pembayaran dibatalkan');
+                $this->handleFailed($order, $payment, $transactionStatus);
                 break;
 
             case 'refund':
             case 'partial_refund':
                 $this->handleRefund($order, $payment);
                 break;
-
-            default:
-                Log::info("Midtrans Notification: Unknown status", [
-                    'order_id' => $orderId,
-                    'status'   => $transactionStatus,
-                ]);
         }
 
-        // 9. Return 200 OK
-        // Wajib return 200 agar Midtrans tahu notifikasi berhasil diterima.
-        // Jika tidak, Midtrans akan terus mengirim ulang notifikasi.
         return response()->json(['message' => 'Notification processed'], 200);
     }
 
@@ -166,9 +111,10 @@ class MidtransNotificationController extends Controller
     {
         Log::info("Payment SUCCESS for Order: {$order->order_number}");
 
-        // Update Order
+        // Update Order sesuai kolom di model kamu
         $order->update([
-            'status' => 'processing', // Siap diproses/dikirim
+            'status'         => 'processing', 
+            'payment_status' => 'paid',      // ✅ Tambahkan ini agar payment_status terupdate
         ]);
 
         // Update Payment
@@ -179,8 +125,8 @@ class MidtransNotificationController extends Controller
             ]);
         }
 
-        // TODO: Kirim email konfirmasi pembayaran
-        // event(new PaymentSuccessful($order));
+        // Trigger Event
+        event(new OrderPaidEvent($order));
     }
 
     /**
@@ -190,8 +136,11 @@ class MidtransNotificationController extends Controller
     {
         Log::info("Payment PENDING for Order: {$order->order_number}", ['message' => $message]);
 
-        // Order tetap pending
-        // Payment tetap pending
+        $order->update([
+            'status'         => 'pending',
+            'payment_status' => 'pending',
+        ]);
+
         if ($payment) {
             $payment->update(['status' => 'pending']);
         }
@@ -204,24 +153,23 @@ class MidtransNotificationController extends Controller
     {
         Log::info("Payment FAILED for Order: {$order->order_number}", ['reason' => $reason]);
 
-        // Update Order
         $order->update([
-            'status' => 'cancelled',
+            'status'         => 'cancelled',
+            'payment_status' => 'failed',
         ]);
 
-        // Update Payment
         if ($payment) {
             $payment->update(['status' => 'failed']);
         }
 
-        // ============================================================
-        // RESTOCK LOGIC (Kembalikan stok produk)
-        // ============================================================
-        foreach ($order->items as $item) {
-            $item->product?->increment('stock', $item->quantity);
+        // RESTOCK LOGIC
+        if ($order->items) {
+            foreach ($order->items as $item) {
+                if ($item->product) {
+                    $item->product->increment('stock', $item->quantity);
+                }
+            }
         }
-
-        // TODO: Kirim email notifikasi pembayaran gagal
     }
 
     /**
@@ -231,21 +179,10 @@ class MidtransNotificationController extends Controller
     {
         Log::info("Payment REFUNDED for Order: {$order->order_number}");
 
+        $order->update(['payment_status' => 'refunded']);
+
         if ($payment) {
             $payment->update(['status' => 'refunded']);
         }
-
-        // TODO: Logic tambahan untuk refund
     }
-    // app/Http/Controllers/MidtransNotificationController.php
-// app/Http/Controllers/MidtransNotificationController.php
-
-
-private function setSuccess(Order $order)
-{
-    $order->update([]);
-
-    // Fire & Forget
-    event(new OrderPaidEvent($order));
-}
 }

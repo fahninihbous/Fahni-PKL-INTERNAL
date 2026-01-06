@@ -10,62 +10,69 @@ use Illuminate\Http\Request;
 class PaymentController extends Controller
 {
     /**
-     * Ambil Snap Token Midtrans (dipanggil via AJAX / frontend)
+     * Mengambil Snap Token untuk order ini (API Endpoint).
+     * Dipanggil via AJAX dari frontend saat user klik "Bayar".
      */
     public function getSnapToken(Order $order, MidtransService $midtransService)
     {
-        // Pastikan user pemilik order
+        // 1. Authorization: Pastikan user adalah pemilik order
         if ($order->user_id !== auth()->id()) {
             abort(403);
         }
 
-        // Jika sudah dibayar, stop
+        // 2. Cek apakah order sudah dibayar
         if ($order->payment_status === 'paid') {
-            return response()->json([
-                'error' => 'Pesanan sudah dibayar.'
-            ], 400);
+            return response()->json(['error' => 'Pesanan sudah dibayar.'], 400);
         }
 
         try {
-            // Generate Snap Token
+            // 3. Generate Snap Token dari Midtrans
             $snapToken = $midtransService->createSnapToken($order);
 
-            // Simpan token ke DB
-            $order->update([
-                'snap_token' => $snapToken
-            ]);
+            // 4. Simpan token ke database untuk referensi
+            $order->update(['snap_token' => $snapToken]);
 
-            return response()->json([
-                'token' => $snapToken
-            ]);
+            // 5. Kirim token ke frontend
+            return response()->json(['token' => $snapToken]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => $e->getMessage()
-            ], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    /**
-     * Halaman sukses setelah pembayaran
-     */
     public function success(Order $order)
     {
-        if ($order->user_id !== auth()->id()) {
-            abort(403);
+    // Cek apakah ini memang milik user yang login
+    if ($order->user_id !== auth()->id()) {
+        abort(403);
+    }
+    // UPDATE STATUS MANUAL (Sambil nunggu materi Webhook)
+        if ($order->status === 'pending') {
+            $order->update([
+                'status' => 'processing',
+                'payment_status' => 'paid'
+            ]);
         }
 
-        return view('payments.success', compact('order'));
+    return redirect()->route('orders.show', $order)->with('success', 'Pembayaran berhasil diproses!');
     }
 
-    /**
-     * Halaman pending (menunggu pembayaran)
-     */
     public function pending(Order $order)
     {
+        // Cek apakah ini memang milik user yang login
         if ($order->user_id !== auth()->id()) {
             abort(403);
         }
 
-        return view('payments.pending', compact('order'));
+        return redirect()->route('orders.show', $order)->with('warning', 'Pembayaran masih dalam status pending.');
+    }
+
+    public function show(Order $order)
+    {
+        // Cek apakah ini memang milik user yang login
+        if ($order->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        return view('orders.show', compact('order'));
     }
 }
