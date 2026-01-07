@@ -1,48 +1,76 @@
 <?php
+// app/Http/Controllers/Admin/OrderController.php
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Order;
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function index()
+    /**
+     * Menampilkan daftar semua pesanan untuk admin.
+     * Dilengkapi filter by status.
+     */
+    public function index(Request $request)
     {
-        // Menggunakan paginate agar tidak error "Method links does not exist"
-        $orders = Order::latest()->paginate(5);
+        $orders = Order::query()
+            ->with('user') // N+1 prevention: Load data user pemilik order
+            // Fitur Filter Status (?status=pending)
+            ->when($request->status, function($q, $status) {
+                $q->where('status', $status);
+            })
+            ->latest() // Urutkan terbaru
+            ->paginate(20);
 
         return view('admin.orders.index', compact('orders'));
     }
 
-    public function show($id)
+    /**
+     * Detail order untuk admin.
+     */
+    public function show(Order $order)
     {
-        // with(['items.product', 'user']) disebut Eager Loading.
-        // Ini wajib agar data produk dan pembeli terbaca di file Blade Anda.
-        $order = Order::with(['items.product', 'user'])->findOrFail($id);
-
+        // Load item produk dan data user
+        $order->load(['items.product', 'user']);
         return view('admin.orders.show', compact('order'));
     }
 
-    public function updateStatus(Request $request, $id)
+    /**
+     * Update status pesanan (misal: kirim barang)
+     * Handle otomatis pengembalian stok jika status diubah jadi Cancelled.
+     */
+    public function updateStatus(Request $request, Order $order)
     {
-        $order = Order::findOrFail($id);
-        
-        // Validasi input status
+        // Validasi status yang dikirim form
         $request->validate([
-            'status' => 'required|in:pending,processing,completed,cancelled'
+            'status' => 'required|in:processing,completed,cancelled'
         ]);
 
-        $order->update([
-            'status' => $request->status
-        ]);
+        $oldStatus = $order->status;
+        $newStatus = $request->status;
 
-        return redirect()->back()->with('success', 'Status pesanan berhasil diperbarui.');
-    }
+        // ============================================================
+        // LOGIKA RESTOCK (PENTING!)
+        // ============================================================
+        // Jika admin membatalkan pesanan, stok barang harus dikembalikan ke gudang.
+        // Syarat:
+        // 1. Status baru adalah 'cancelled'
+        // 2. Status lama BUKAN 'cancelled' (agar tidak restock 2x kalau tombol ditekan berkali-kali)
+        // ============================================================
+        if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
+            foreach ($order->items as $item) {
+                // increment() adalah operasi atomik (thread-safe) di level database.
+                // SQL-nya kurang lebih: UPDATE products SET stock = stock + X WHERE id = Y
+                // Ini aman dari Race Condition jika ada transaksi bersamaan.
+                $item->product->increment('stock', $item->quantity);
+            }
+        }
 
-    public function salesReport()
-    {
-        return view('admin.reporst.sales');
+        // Update status di database
+        $order->update(['status' => $newStatus]);
+
+        return back()->with('success', "Status pesanan diperbarui menjadi $newStatus");
     }
 }
