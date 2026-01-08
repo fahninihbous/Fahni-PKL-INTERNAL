@@ -104,44 +104,106 @@
         @endif
     </div>
 </div>
-
+@endsection
 <style>
-    /* Custom Styling for Modern Look */
-    .bg-soft-primary { background-color: #e0eaff !important; }
-    .bg-soft-success { background-color: #e8fadf !important; }
-    .bg-soft-warning { background-color: #fff8dd !important; }
-    .bg-soft-danger { background-color: #fff5f8 !important; }
-    .bg-soft-info { background-color: #e1f5fe !important; }
-    .bg-soft-secondary { background-color: #f1f3f5 !important; }
+    /* 1. Global & Header Styling */
+    body {
+        background-color: #f8f9fa;
+    }
+
+    h1.h3 {
+        color: #2d422d !important; /* Hijau Hutan Aden */
+    }
+
+    .bg-primary {
+        background-color: #6ab04c !important; /* Hijau Daun Utama */
+        box-shadow: 0 4px 15px rgba(106, 176, 76, 0.3) !important;
+    }
+
+    /* 2. Card & Table Container */
+    .card.rounded-4 {
+        border-radius: 20px !important;
+        border: 1px solid #eef3ed !important;
+        background-color: #ffffff;
+    }
+
+    .table thead {
+        background-color: #fdfcf8 !important;
+        border-bottom: 2px solid #eef3ed;
+    }
 
     .table thead th {
         font-size: 11px;
-        letter-spacing: 0.05rem;
+        letter-spacing: 1.2px;
         font-weight: 700;
+        color: #5d715d;
+        padding: 15px 10px;
+    }
+
+    /* 3. Soft Status Badges */
+    .bg-soft-warning { background-color: #fff8dd !important; color: #856404 !important; }
+    .bg-soft-info { background-color: #e0f7fa !important; color: #006064 !important; }
+    .bg-soft-primary { background-color: #e7f3ff !important; color: #0061f2 !important; }
+    .bg-soft-success { background-color: #e8fadf !important; color: #2d422d !important; }
+    .bg-soft-danger { background-color: #fff5f8 !important; color: #b91d1d !important; }
+    .bg-soft-secondary { background-color: #f1f3f5 !important; color: #495057 !important; }
+
+    .badge {
+        letter-spacing: 0.3px;
+    }
+
+    /* 4. Action Button Styling */
+    .btn-light.text-primary {
+        background-color: #f1f8e9 !important;
+        color: #6ab04c !important;
+        border: 1px solid #dcedc8 !important;
+        transition: all 0.3s ease;
+    }
+
+    .btn-light.text-primary:hover {
+        background-color: #6ab04c !important;
+        color: #ffffff !important;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(106, 176, 76, 0.2) !important;
+    }
+
+    /* 5. Typography & Details */
+    .text-dark.fw-bold {
+        color: #2d3436 !important;
+    }
+
+    .table-hover tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #fafdfa;
+    }
+
+    /* 6. Empty State Button */
+    .btn-primary.rounded-pill {
+        background-color: #6ab04c !important;
         border: none;
+        font-weight: 600;
+        padding: 10px 25px;
     }
 
-    .table tbody tr {
-        transition: all 0.2s ease;
+    .btn-primary.rounded-pill:hover {
+        background-color: #58943f !important;
+        transform: scale(1.05);
     }
 
-    .table tbody tr:hover {
-        background-color: #fbfcfe;
-        transform: scale(1.002);
+    /* 7. Pagination Styling */
+    .pagination .page-link {
+        color: #6ab04c;
+        border-radius: 8px;
+        margin: 0 3px;
+        border: none;
+        background: #f1f8e9;
     }
 
-    .btn-light {
-        background-color: #f8fafc;
-        transition: all 0.3s;
-    }
-
-    .btn-light:hover {
-        background-color: #0d6efd !important;
-        color: white !important;
-    }
-
-    .card {
-        border-radius: 15px;
+    .pagination .page-item.active .page-link {
+        background-color: #6ab04c;
+        color: white;
     }
 </style>
-@endsection

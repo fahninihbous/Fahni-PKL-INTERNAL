@@ -16,25 +16,157 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
-        .sidebar {
-            min-height: 100vh;
-            background: linear-gradient(180deg, #1e3a5f 0%, #0f172a 100%);
-        }
-        .sidebar .nav-link {
-            color: rgba(255,255,255,0.7);
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin: 4px 12px;
-            transition: all 0.2s;
-        }
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-        }
-        .sidebar .nav-link i {
-            width: 24px;
-        }
+        :root {
+    --admin-primary: #2d422d; /* Hijau Hutan Tua */
+    --admin-dark: #1b2e1b;
+    --accent-green: #6ab04c;
+    --accent-gold: #eccc68;
+    --sidebar-width: 270px;
+    --bg-light: #f8fafc;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: #334155;
+    background-color: var(--bg-light);
+    margin: 0;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    min-height: 100vh;
+    background: linear-gradient(180deg, var(--admin-primary) 0%, var(--admin-dark) 100%);
+    box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+    z-index: 1000;
+    position: sticky;
+    top: 0;
+    transition: all 0.3s ease;
+}
+
+.sidebar-brand {
+    padding: 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.nav-item-header {
+    padding: 1.5rem 1.5rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.4);
+}
+
+.sidebar .nav-link {
+    color: rgba(255,255,255,0.65);
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin: 4px 18px;
+    font-weight: 500;
+    font-size: 0.925rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.sidebar .nav-link i {
+    font-size: 1.1rem;
+    margin-right: 12px;
+    transition: transform 0.3s;
+}
+
+.sidebar .nav-link:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.sidebar .nav-link.active {
+    background: var(--accent-green);
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(106, 176, 76, 0.3);
+}
+
+.sidebar .nav-link.active i {
+    color: var(--accent-gold);
+}
+
+/* User Section in Sidebar */
+.user-section {
+    background: rgba(0, 0, 0, 0.2);
+    margin: 15px;
+    border-radius: 15px;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.user-section img {
+    border: 2px solid var(--accent-green);
+}
+
+/* Top Bar Styling */
+header.bg-white {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 2rem !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-title {
+    font-weight: 700;
+    color: var(--admin-primary);
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+/* Buttons */
+.btn-action {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-outline-success {
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+}
+
+.btn-outline-success:hover {
+    background-color: var(--accent-green);
+    color: white;
+}
+
+/* Notifications/Badges */
+.badge-pending {
+    background: var(--accent-gold);
+    color: var(--admin-primary);
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+}
+
+/* Sidebar Scrollbar */
+nav::-webkit-scrollbar {
+    width: 4px;
+}
+nav::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+}
+
+/* Main Content Padding */
+main {
+    padding: 2rem;
+}
     </style>
     @stack('styles')
 </head>

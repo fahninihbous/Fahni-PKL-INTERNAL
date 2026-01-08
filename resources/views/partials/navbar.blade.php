@@ -7,8 +7,8 @@
     <div class="container">
         {{-- Logo & Brand --}}
         <a class="navbar-brand text-dark" href="{{ route('home') }}">
-            <i class="bi bi-lightning-charge fs-3"></i>
-            Harley Davidson
+            <i class=" bi-leaf-fill"></i>
+            Aden Garden
         </a>
 
         {{-- Mobile Toggle --}}
@@ -126,4 +126,113 @@
             </ul>
         </div>
     </div>
-</nav>
+</nav>\
+<style>
+    /* 1. Global Navbar Styling */
+    .navbar {
+        background-color: #ffffff !important;
+        padding: 0.8rem 0;
+        transition: all 0.3s ease;
+    }
+
+    .navbar-brand {
+        font-weight: 800;
+        color: #2d422d !important; /* Hijau Hutan Tua */
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .navbar-brand i {
+        color: #6ab04c; /* Hijau Daun */
+    }
+
+    /* 2. Search Bar Styling */
+    .input-group .form-control {
+        border-radius: 50px 0 0 50px !important;
+        border-color: #eef3ed;
+        padding-left: 20px;
+        background-color: #f8fcf7;
+    }
+
+    .input-group .form-control:focus {
+        box-shadow: none;
+        border-color: #6ab04c;
+    }
+
+    .input-group .btn-outline-primary {
+        border-radius: 0 50px 50px 0 !important;
+        border-color: #eef3ed;
+        color: #6ab04c;
+        background-color: #f8fcf7;
+    }
+
+    .input-group .btn-outline-primary:hover {
+        background-color: #6ab04c;
+        border-color: #6ab04c;
+        color: white;
+    }
+
+    /* 3. Nav Links Styling */
+    .nav-link {
+        color: #4a5d4a !important;
+        font-weight: 500;
+        padding: 0.5rem 1rem !important;
+        transition: 0.2s;
+    }
+
+    .nav-link:hover {
+        color: #6ab04c !important;
+    }
+
+    /* 4. Badge & Icon Styling */
+    .bi-heart, .bi-cart, .bi-grid {
+        font-size: 1.2rem;
+    }
+
+    .badge {
+        font-weight: 700;
+        padding: 0.35em 0.5em !important;
+    }
+
+    .bg-danger { background-color: #ff6b6b !important; } /* Soft red for wishlist */
+    .bg-primary { background-color: #6ab04c !important; } /* Green for cart */
+
+    /* 5. Dropdown Styling */
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 10px 30px rgba(45, 66, 45, 0.1);
+        border-radius: 15px;
+        padding: 10px;
+        margin-top: 15px !important;
+    }
+
+    .dropdown-item {
+        border-radius: 8px;
+        padding: 8px 15px;
+        font-weight: 500;
+        color: #4a5d4a;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f1f8e9;
+        color: #2d422d;
+    }
+
+    /* 6. Button Styling */
+    .btn-primary {
+        background-color: #6ab04c !important;
+        border-color: #6ab04c !important;
+        border-radius: 50px;
+        padding: 6px 20px;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(106, 176, 76, 0.2);
+    }
+
+    .btn-primary:hover {
+        background-color: #2d422d !important;
+        border-color: #2d422d !important;
+        transform: translateY(-2px);
+    }
+</style>

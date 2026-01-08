@@ -50,7 +50,7 @@
                     {{ $product->formatted_original_price }}
                 </small>
             @endif
-            <div class="fw-bold text-primary">
+            <div class="fw-bold text-dark">
                 {{ $product->formatted_price }}
             </div>
         </div>
