@@ -1,97 +1,58 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-
+use Illuminate\Contracts\Support\Renderable;
 
 class HomeController extends Controller
 {
     /**
-     * Create a new controller instance.
-     *
-     * @return void
+     * Menampilkan halaman beranda website.
+     * * @return Renderable
      */
-    // public function __construct()
-    // {
-    //     $this->middleware('auth');
-    // }
-
-    /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
-    public function index()
+    public function index(): Renderable
     {
-        // ================================================
-// FILE: app/Http/Controllers/HomeController.php
-// FUNGSI: Menangani halaman utama website
-// ================================================
-    /**
-     * Menampilkan halaman beranda.
-     *
-     * Halaman ini menampilkan:
-     * - Hero section (static)
-     * - Kategori populer
-     * - Produk unggulan (featured)
-     * - Produk terbaru
-     */    {
-        // ================================================
-        // AMBIL DATA KATEGORI
-        // - Hanya yang aktif
-        // - Hitung jumlah produk di masing-masing kategori
-        // ================================================
+        // 1. AMBIL DATA KATEGORI
+        // Mengambil kategori aktif yang memiliki produk aktif dan tersedia stoknya
         $categories = Category::query()
-            ->active()                    // Scope: hanya is_active = true
-            ->withCount(['activeProducts' => function($q) {
+            ->where('is_active', true) 
+            ->withCount(['products' => function($q) {
                 $q->where('is_active', true)
                   ->where('stock', '>', 0);
             }])
-            ->having('active_products_count', '>', 0)  // Hanya yang punya produk
+            ->having('products_count', '>', 0) // Hanya tampilkan kategori yang ada isinya
             ->orderBy('name')
-            ->take(6)                     // Batasi 6 kategori
+            ->take(6)
             ->get();
 
-        // ================================================
-        // PRODUK UNGGULAN (FEATURED)
-        // - Flag is_featured = true
-        // - Aktif dan ada stok
-        // ================================================
+        // 2. PRODUK UNGGULAN (FEATURED)
+        // Menggunakan Scope yang sudah Anda buat di Model Product
         $featuredProducts = Product::query()
-            ->with(['category', 'primaryImage'])  // Eager load untuk performa
-            ->active()                             // Scope: is_active = true
-            ->inStock()                            // Scope: stock > 0
-            ->featured()                           // Scope: is_featured = true
+            ->with(['category', 'primaryImage'])
+            ->active()   // Filter is_active = true
+            ->inStock()  // Filter stock > 0
+            ->featured() // Filter is_featured = true
             ->latest()
             ->take(8)
             ->get();
 
-        // ================================================
-        // PRODUK TERBARU
-        // - Urutkan dari yang paling baru
-        // ================================================
+        // 3. PRODUK TERBARU
         $latestProducts = Product::query()
             ->with(['category', 'primaryImage'])
-            ->active()
-            ->inStock()
-            ->latest()         // Order by created_at DESC
+            ->active()   // Filter is_active = true
+            ->inStock()  // Filter stock > 0
+            ->latest()
             ->take(8)
             ->get();
 
-        // ================================================
-        // KIRIM DATA KE VIEW
-        // compact() membuat array ['key' => $key]
-        // ================================================
+        // 4. KIRIM DATA KE VIEW
         return view('home', compact(
             'categories',
             'featuredProducts',
             'latestProducts'
         ));
     }
-  }
-
 }

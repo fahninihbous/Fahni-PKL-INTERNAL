@@ -1,75 +1,64 @@
 <?php
-// app/Http/Requests/StoreProductRequest.php
-
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProductRequest extends FormRequest
 {
     /**
-     * Tentukan apakah user diizinkan membuat request ini.
+     * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        // Hanya user dengan role 'admin' yang boleh menambah produk.
-        // auth()->check() memastikan user sudah login.
-        return auth()->check() && auth()->user()->role === 'admin';
+        return true; // atau auth()->check() jika perlu
     }
 
     /**
-     * Aturan validasi untuk data yang dikirim.
+     * Get the validation rules that apply to the request.
      */
     public function rules(): array
     {
+        // Ambil ID produk yang sedang diedit
+        $productId = $this->route('product')->id;
+
         return [
-            // category_id harus ada di tabel categories kolom id
-            'category_id' => ['required', 'exists:categories,id'],
+            // Field utama produk - WAJIB ada di sini!
+            'name'            => ['required', 'string', 'max:255', Rule::unique('products')->ignore($productId)],
+            'description'     => ['nullable', 'string'],
+            'price'           => ['required', 'numeric', 'min:0'],
+            'stock'           => ['required', 'integer', 'min:0'],
+            'weight'          => ['required', 'integer', 'min:1'], // jika wajib
+            'category_id'     => ['required', 'exists:categories,id'],
 
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            // Gambar baru (opsional)
+            'images'          => ['nullable', 'array'],
+            'images.*'        => ['image', 'mimes:jpeg,png,jpg,gif,webp', 'max:5120'], // max 5MB
 
-            // Harga minimal 1000 rupiah
-            'price' => ['required', 'numeric', 'min:1000'],
+            // Gambar yang akan dihapus
+            'delete_images'   => ['nullable', 'array'],
+            'delete_images.*' => ['exists:product_images,id'],
 
-            // Harga diskon (opsional), tapi jika diisi:
-            // 1. Harus numeric
-            // 2. Minimal 0
-            // 3. Harus KURANG DARI ('lt' = less than) harga asli (price)
-            'discount_price' => ['nullable', 'numeric', 'min:0', 'lt:price'],
+            // Set gambar utama
+            'primary_image'   => ['nullable', 'exists:product_images,id'],
 
-            'stock' => ['required', 'integer', 'min:0'],
-            'weight' => ['required', 'integer', 'min:1'], // Berat minimal 1 gram
-
-            'is_active' => ['boolean'],
-            'is_featured' => ['boolean'],
-
-            // Validasi Array Gambar
-            // 'images' harus berupa array
-            // Maksimal 10 file sekaligus
-            'images' => ['nullable', 'array', 'max:10'],
-
-            // Validasi TIAP item di dalam array images
-            // 'images.*' artinya "setiap file di dalam array images"
-            'images.*' => [
-                'image', // Harus berupa file gambar
-                'mimes:jpg,png,webp', // Ekstensi yang diperbolehkan
-                'max:2048' // Maksimal 2MB per file (2048 KB)
-            ],
+            // Status
+            'is_active'       => ['boolean'],
+            'is_featured'     => ['boolean'],
         ];
     }
 
     /**
-     * Persiapkan data sebelum validasi dijalankan.
-     * Berguna untuk normalisasi data.
+     * Custom message (opsional)
      */
-    protected function prepareForValidation(): void
+    public function messages(): array
     {
-        // Checkbox di HTML kadang tidak mengirim value jika tidak dicentang (atau kirim string "on").
-        // Kita paksa konversi jadi boolean true/false agar database menerima nilai yang benar (1/0).
-        $this->merge([
-            'is_active' => $this->boolean('is_active'),
-            'is_featured' => $this->boolean('is_featured'),
-        ]);
+        return [
+            'name.required'        => 'Nama produk wajib diisi.',
+            'name.unique'          => 'Nama produk sudah digunakan.',
+            'price.required'       => 'Harga wajib diisi.',
+            'category_id.required' => 'Pilih kategori produk.',
+            'weight.required'      => 'Berat produk wajib diisi untuk ongkir.',
+        ];
     }
 }

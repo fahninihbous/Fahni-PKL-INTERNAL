@@ -1,4 +1,5 @@
 <?php
+
 // app/Http/Controllers/Admin/ProductController.php
 
 namespace App\Http\Controllers\Admin;
@@ -20,30 +21,50 @@ class ProductController extends Controller
     /**
      * Menampilkan daftar produk dengan fitur pagination dan filtering.
      */
-    public function index(Request $request): View
-    {
-        $products = Product::query()
-            // Eager Loading: Meload relasi kategori & gambar utama sekaligus.
-            // Tanpa 'with', Laravel akan mengeksekusi 1 query tambahan untuk SETIAP baris produk (N+1 Problem).
-            ->with(['category', 'primaryImage'])
+  public function index(Request $request): View
+{
+    // 1. Jalankan query produk dengan semua filternya
+    $products = Product::query()
+        // Eager Loading: Mencegah N+1 Problem
+        ->with(['category', 'primaryImage'])
 
-            // Filter: Pencarian nama produk
-            ->when($request->search, function ($query, $search) {
-                $query->search($search); // Menggunakan Scope 'search' di Model Product
-            })
-            // Filter: Berdasarkan Kategori
-            ->when($request->category, function ($query, $categoryId) {
-                $query->where('category_id', $categoryId);
-            })
-            ->latest() // Urut dari yang terbaru
-            ->paginate(15) // Batasi 15 item per halaman
-            ->withQueryString(); // Memastikan parameter URL (?search=xx) tetap ada saat pindah halaman
+        // Filter: Pencarian nama produk
+        ->when($request->search, function ($query, $search) {
+            $query->search($search); // Menggunakan Scope 'search' di Model Product
+        })
 
-        // Ambil data kategori untuk dropdown filter di view
-        $categories = Category::active()->orderBy('name')->get();
+        // Filter: Berdasarkan Kategori
+        ->when($request->category, function ($query, $categoryId) {
+            $query->where('category_id', $categoryId);
+        })
 
-        return view('admin.products.index', compact('products', 'categories'));
-    }
+        // FILTER STATUS (Perbaikan di sini)
+        ->when($request->filled('status'), function ($query) use ($request) {
+            if ($request->status == 'active') {
+                $query->where('is_active', true);
+            } elseif ($request->status == 'inactive') {
+                $query->where('is_active', false);
+            }
+        })
+
+        // Filter: Rentang Harga (Opsional, jika ingin diaktifkan)
+        ->when($request->min_price, function ($query, $minPrice) {
+            $query->where('price', '>=', $minPrice);
+        })
+        ->when($request->max_price, function ($query, $maxPrice) {
+            $query->where('price', '<=', $maxPrice);
+        })
+
+        ->latest()           
+        ->paginate(15)       
+        ->withQueryString(); 
+
+    // 2. Ambil data kategori untuk dropdown filter
+    $categories = Category::active()->orderBy('name')->get();
+
+    // 3. Kirim ke View
+    return view('admin.products.index', compact('products', 'categories'));
+}
 
     /**
      * Menampilkan form tambah produk.
@@ -131,62 +152,93 @@ class ProductController extends Controller
      * Juga menggunakan Transaction karena melibatkan update produk + upload/delete gambar.
      */
     public function update(UpdateProductRequest $request, Product $product): RedirectResponse
-    {
-        try {
-            DB::beginTransaction();
+{
+    try {
+        DB::beginTransaction();
 
-            // 1. Update data dasar produk
-            $product->update($request->validated());
+        // 1. Ambil data yang sudah divalidasi
+        $data = $request->validated();
 
-            // 2. Upload gambar BARU (jika user menambah gambar)
-            if ($request->hasFile('images')) {
-                $this->uploadImages($request->file('images'), $product);
-            }
+        // 2. PERBAIKAN LOGIKA STATUS (Boolean Checkbox)
+        // Jika checkbox tidak dicentang, 'is_active' tidak akan ada di request.
+        // Kita paksa nilainya menjadi true/false agar database terupdate.
+        $data['is_active'] = $request->has('is_active');
+        $data['is_featured'] = $request->has('is_featured');
 
-            // 3. Hapus gambar LAMA (yang dicentang user untuk dihapus)
-            if ($request->has('delete_images')) {
-                $this->deleteImages($request->delete_images);
-            }
+        // 3. Update data dasar produk
+        $product->update($data);
 
-            // 4. Set gambar Utama (Primary Image)
-            // Jika user memilih gambar tertentu jadi thumbnail baru.
-            if ($request->has('primary_image')) {
-                $this->setPrimaryImage($product, $request->primary_image);
-            }
-
-            DB::commit();
-
-            return redirect()
-                ->route('admin.products.index')
-                ->with('success', 'Produk berhasil diperbarui!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withInput()->with('error', 'Gagal update: ' . $e->getMessage());
+        // 4. Upload gambar BARU (jika user menambah gambar)
+        if ($request->hasFile('images')) {
+            $this->uploadImages($request->file('images'), $product);
         }
+
+        // 5. Hapus gambar LAMA (yang dicentang user untuk dihapus)
+        if ($request->has('delete_images')) {
+            $this->deleteImages($request->delete_images);
+        }
+
+        // 6. Set gambar Utama (Primary Image)
+        if ($request->has('primary_image')) {
+            $this->setPrimaryImage($product, $request->primary_image);
+        }
+
+        DB::commit();
+
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Produk berhasil diperbarui!');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->withInput()->with('error', 'Gagal update: ' . $e->getMessage());
     }
+}
 
     /**
      * Menghapus produk.
      */
-    public function destroy(Product $product): RedirectResponse
-    {
-        try {
-            // Loop dan hapus semua file gambar fisik dari server.
-            foreach ($product->images as $image) {
-                Storage::disk('public')->delete($image->image_path);
-            }
+   public function destroy(Request $request, Product $product): RedirectResponse
+{
+    // Tangkap semua filter saat ini dari request
+    $filters = [
+        'search'    => $request->search,
+        'category'  => $request->category,
+        'status'    => $request->status,
+        'min_price' => $request->min_price,
+        'max_price' => $request->max_price,
+    ];
 
-            // Hapus record produk dari database.
-            // Relasi lain (seperti cart_items atau order_items) mungkin perlu dicek
-            // atau gunakan SoftDeletes jika ingin data aman. Di sini kita Hard Delete.
+    try {
+        return DB::transaction(function () use ($product, $filters) {
+            
+            // 1. Simpan daftar path gambar sebelum produk dihapus
+            $imagePaths = $product->images->pluck('image_path')->toArray();
+
+            // 2. Hapus record produk dari database.
             $product->delete();
 
-            return redirect()->route('admin.products.index')->with('success', 'Produk dihapus!');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus: ' . $e->getMessage());
+            // 3. Hapus file fisik dari storage
+            foreach ($imagePaths as $path) {
+                if (Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
+                }
+            }
+
+            // 4. Redirect kembali dengan membawa SEMUA filter agar posisi tidak berubah
+            return redirect()->route('admin.products.index', $filters)
+                ->with('success', 'Produk berhasil dihapus permanen!');
+        });
+
+    } catch (\Illuminate\Database\QueryException $e) {
+        if ($e->getCode() == "23000") {
+            return back()->with('error', 'Gagal: Produk sudah dipesan. Silakan non-aktifkan saja statusnya.');
         }
+        return back()->with('error', 'Gagal menghapus produk karena masalah database.');
+    } catch (\Exception $e) {
+        return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
     }
+}
 
     // --- Helper Methods ---
     // Method protected agar tidak bisa diakses via URL/Route, hanya internal class ini.

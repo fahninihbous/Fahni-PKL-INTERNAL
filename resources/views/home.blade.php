@@ -45,30 +45,33 @@
     </section>
 
     {{-- Kategori --}}
-    <section class="py-5">
-        <div class="container">
-            <h2 class="text-center mb-4">Kategori Populer</h2>
-            <div class="row g-4">
-                @foreach($categories as $category)
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <a href="{{ route('catalog.index', ['category' => $category->slug]) }}"
-                           class="text-decoration-none">
-                            <div class="card border-0 shadow-sm text-center h-100">
-                                <div class="card-body">
-                                    <img src="{{ $category->image_url }}"
-                                         alt="{{ $category->name }}"
-                                         class="rounded-circle mb-3"
-                                         width="80" height="80"
-                                         style="object-fit: cover;">
-                                    <h6 class="card-title mb-0">{{ $category->name }}</h6>
-                                    <small class="text-muted">{{ $category->products_count }} produk</small>
-                                </div>
+    <section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="fw-bold mb-4">Kategori Populer</h2>
+        <div class="row g-4">
+            @foreach($categories as $category)
+                <div class="col-6 col-md-4 col-lg-2">
+                    <a href="{{ route('catalog.index', ['category' => $category->slug]) }}"
+                       class="text-decoration-none group-category">
+                        <div class="card border-0 shadow-sm h-100 category-card-portrait">
+                            <div class="category-img-wrapper">
+                                <img src="{{ $category->image_url }}"
+                                     alt="{{ $category->name }}"
+                                     class="card-img-top img-square"
+                                     onerror="this.onerror=null;this.src='https://placehold.co/400x500?text={{ $category->name }}';">
                             </div>
-                        </a>
-                    </div>
-                @endforeach
-            </div>
+                            
+                            <div class="card-body text-center d-flex flex-column justify-content-center py-3">
+                                <h6 class="card-title mb-1 text-dark fw-bold text-truncate">{{ $category->name }}</h6>
+                                <small class="text-muted d-block mb-2">{{ $category->products_count }} Produk</small>
+                                <span class="btn-explore-mini">Lihat Produk <i class="bi bi-chevron-right"></i></span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            @endforeach
         </div>
+    </div>
     </section>
 
     {{-- Produk Unggulan --}}
@@ -135,6 +138,57 @@
     </section>
 @endsection
 <style>
+    /* 8. Portrait Category Card Style */
+    
+    .category-card-portrait {
+        border-radius: 15px !important;
+        overflow: hidden;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .category-img-wrapper {
+        width: 100%;
+        /* Mengatur proporsi kotak agak tinggi (Portrait) */
+        aspect-ratio: 4 / 5; 
+        overflow: hidden;
+        background: #f8f9fa;
+    }
+
+    .img-square {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Foto tetap proporsional meski kotak */
+        transition: transform 0.5s ease;
+    }
+
+    /* Animasi Hover Baru */
+    .group-category:hover .img-square {
+        transform: scale(1.1);
+    }
+
+    .group-category:hover .category-card-portrait {
+        border-color: #6ab04c !important;
+        box-shadow: 0 10px 25px rgba(45, 66, 45, 0.15) !important;
+    }
+
+    /* Tombol Mini di bawah teks */
+    .btn-explore-mini {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #6ab04c;
+        letter-spacing: 0.5px;
+        opacity: 0.7;
+        transition: all 0.3s ease;
+    }
+
+    .group-category:hover .btn-explore-mini {
+        opacity: 1;
+        letter-spacing: 1px;
+    }
+    
     /* 1. Global & Typography */
     body {
         background-color: #fdfcf8;
