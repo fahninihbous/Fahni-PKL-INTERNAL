@@ -46,13 +46,14 @@
                 @auth
                     {{-- Wishlist --}}
                     <li class="nav-item">
-                        <a class="nav-link position-relative" href="{{ route('wishlist.index') }}">
-                            <i class="bi bi-heart"></i>
-                            @if(auth()->user()->wishlists()->count() > 0)
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                        <a href="{{ route('wishlist.index') }}" class="nav-link position-relative">
+                            <i class="bi bi-heart fs-5"></i>
+                            @auth
+                                <span id="wishlist-count" 
+                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger {{ auth()->user()->wishlists()->count() == 0 ? 'd-none' : '' }}">
                                     {{ auth()->user()->wishlists()->count() }}
                                 </span>
-                            @endif
+                            @endauth
                         </a>
                     </li>
 

@@ -50,7 +50,6 @@ class StoreProductRequest extends FormRequest
             'images'         => ['nullable', 'array', 'max:10'],
 
             // Validasi TIAP item di dalam array images
-            // 'images.*' artinya "setiap file di dalam array images"
             'images.*'       => [
                 'image',              // Harus berupa file gambar
                 'mimes:jpg,png,webp', // Ekstensi yang diperbolehkan
@@ -68,8 +67,10 @@ class StoreProductRequest extends FormRequest
         // Checkbox di HTML kadang tidak mengirim value jika tidak dicentang (atau kirim string "on").
         // Kita paksa konversi jadi boolean true/false agar database menerima nilai yang benar (1/0).
         $this->merge([
-            'is_active'   => $this->boolean('is_active'),
-            'is_featured' => $this->boolean('is_featured'),
+            'is_active'      => $this->boolean('is_active'),
+            'is_featured'    => $this->boolean('is_featured'),
+            // PERBAIKAN: Memastikan jika input kosong diset menjadi null, bukan string kosong ("")
+            'discount_price' => $this->filled('discount_price') ? $this->discount_price : null,
         ]);
     }
 }

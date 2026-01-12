@@ -91,3 +91,136 @@
         </form>
     </div>
 </div>
+
+<style>
+    /* 1. PRODUCT CARD BASE
+       Mengatur struktur kartu agar memiliki sudut yang halus dan bayangan lembut. */
+    .product-card {
+        border-radius: 20px !important;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid #f0f0f0 !important;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .product-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(45, 66, 45, 0.1) !important;
+        border-color: #6ab04c !important;
+    }
+
+    /* 2. PRODUCT IMAGE
+       Memastikan gambar produk proporsional dan memiliki efek zoom saat hover. */
+    .product-card .card-img-top {
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        transition: transform 0.6s ease;
+    }
+
+    .product-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+
+    /* 3. BADGE DISKON (Glassmorphism)
+       Tampilan badge diskon yang melayang dengan efek blur transparan. */
+    .badge-discount {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: rgba(231, 76, 60, 0.9);
+        backdrop-filter: blur(4px);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        z-index: 2;
+        box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+    }
+
+    /* 4. WISHLIST BUTTON
+       Tombol hati yang muncul lebih elegan di pojok gambar. */
+    .product-card .btn-light.rounded-circle {
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        z-index: 3;
+    }
+
+    .product-card .btn-light.rounded-circle:hover {
+        background: #fff;
+        transform: scale(1.1);
+        color: #e74c3c;
+    }
+
+    /* 5. PRODUCT INFO (Body) */
+    .product-card .card-title a {
+        font-weight: 700;
+        color: #2d422d !important;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        transition: color 0.3s ease;
+    }
+
+    .product-card:hover .card-title a {
+        color: #6ab04c !important;
+    }
+
+    .product-card .text-muted {
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    /* 6. PRICE & STOCK TAGS */
+    .product-card .fw-bold.text-dark {
+        font-size: 1.1rem;
+        color: #2d3436 !important;
+    }
+
+    .text-decoration-line-through {
+        font-size: 0.8rem;
+        opacity: 0.6;
+    }
+
+    /* Animasi denyut halus untuk stok yang hampir habis */
+    .text-warning {
+        font-weight: 600;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* 7. CART BUTTON (Modern Green)
+       Tombol tambah keranjang yang lebih lebar dan bersih. */
+    .product-card .btn-primary {
+        background: #6ab04c !important;
+        border: none !important;
+        border-radius: 12px;
+        padding: 8px 15px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .product-card .btn-primary:hover {
+        background: #58943f !important;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(106, 176, 76, 0.3);
+    }
+
+    .product-card .btn-primary:disabled {
+        background: #bdc3c7 !important;
+        transform: none;
+    }
+
+    /* Footer adjustment */
+    .product-card .card-footer {
+        padding-bottom: 20px;
+    }
+</style>

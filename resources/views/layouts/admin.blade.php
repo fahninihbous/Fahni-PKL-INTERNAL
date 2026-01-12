@@ -223,10 +223,11 @@ main {
                             <i class="bi bi-people me-2"></i> Pengguna
                         </a>
                     </li>
-
-                    <li class="nav-item mt-3">
-                        <span class="nav-link text-muted small text-uppercase">Laporan</span>
-                    </li>
+                        <li class="nav-item mt-4 pt-3 border-top">
+                            <span class="nav-link text-light fw-bolder small text-uppercase" style="letter-spacing: 1.5px; opacity: 0.7;">
+                                Laporan Transaksi
+                            </span>
+                        </li>
 
                     <li class="nav-item">
                         <a href="{{ route('admin.reports.sales') ?? '#' }}"

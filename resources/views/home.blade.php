@@ -47,8 +47,9 @@
     {{-- Kategori --}}
     <section class="py-5 bg-light">
     <div class="container">
-        <h2 class="fw-bold mb-4">Kategori Populer</h2>
-        <div class="row g-4">
+        <h2 class="fw-bold mb-4 text-center">Kategori Populer</h2>
+        
+        <div class="row g-4 justify-content-center">
             @foreach($categories as $category)
                 <div class="col-6 col-md-4 col-lg-2">
                     <a href="{{ route('catalog.index', ['category' => $category->slug]) }}"
@@ -72,7 +73,7 @@
             @endforeach
         </div>
     </div>
-    </section>
+</section>
 
     {{-- Produk Unggulan --}}
     <section class="py-5 bg-light">
@@ -83,7 +84,7 @@
                     Lihat Semua <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
-            <div class="row g-4">
+            <div class="row g-4 justify-content-center"">
                 @foreach($featuredProducts as $product)
                     <div class="col-6 col-md-4 col-lg-3">
                         @include('partials.product-card', ['product' => $product])
@@ -94,40 +95,65 @@
     </section>
 
     {{-- Promo Banner --}}
-    <section class="py-5">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="card bg-warning text-dark border-0" style="min-height: 200px;">
-                        <div class="card-body d-flex flex-column justify-content-center">
-                            <h3>Flash Sale!</h3>
-                            <p>Diskon hingga 50% untuk produk pilihan</p>
-                            <a href="#" class="btn btn-dark" style="width: fit-content;">
-                                Lihat Promo
-                            </a>
+   <section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            {{-- CARD FLASH SALE --}}
+            <div class="col-md-6">
+                <a href="{{ route('catalog.index', ['promo' => 1]) }}" class="text-decoration-none">
+                    <div class="card bg-warning border-0 position-relative overflow-hidden promo-card" style="min-height: 220px;">
+                        <div class="position-absolute top-0 end-0 p-3 opacity-25">
+                            <i class="bi bi-lightning-charge-fill" style="font-size: 6rem;"></i>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center px-4 position-relative">
+                            <span class="badge bg-danger mb-2" style="width: fit-content;">PROMO TERBATAS</span>
+                            <h3 class="fw-bold text-dark h2 mb-1">Flash Sale!</h3>
+                            <p class="text-dark opacity-75 mb-4">Diskon hingga 50% untuk produk pilihan kebun.</p>
+                            <span class="btn btn-dark fw-bold rounded-pill px-4 shadow-sm" style="width: fit-content;">
+                                Lihat Semua Promo <i class="bi bi-arrow-right ms-2"></i>
+                            </span>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card bg-info text-white border-0" style="min-height: 200px;">
-                        <div class="card-body d-flex flex-column justify-content-center">
-                            <h3>Member Baru?</h3>
-                            <p>Dapatkan voucher Rp 50.000 untuk pembelian pertama</p>
-                            <a href="{{ route('register') }}" class="btn btn-light" style="width: fit-content;">
-                                Daftar Sekarang
-                            </a>
+                </a>
+            </div>
+
+            {{-- CARD MEMBER BARU (Hanya muncul jika belum login) --}}
+            <div class="col-md-6">
+                @guest
+                    <a href="{{ route('register') }}" class="text-decoration-none">
+                        <div class="card bg-info border-0 position-relative overflow-hidden promo-card" style="min-height: 220px;">
+                            <div class="position-absolute top-0 end-0 p-3 opacity-25 text-white">
+                                <i class="bi bi-stars" style="font-size: 6rem;"></i>
+                            </div>
+                            <div class="card-body d-flex flex-column justify-content-center px-4 position-relative">
+                                <span class="badge bg-white text-info mb-2" style="width: fit-content;">MEMBER BARU</span>
+                                <h3 class="fw-bold text-white h2 mb-1">Makin Hemat?</h3>
+                                <p class="text-white opacity-75 mb-4">Dapatkan voucher Rp 50.000 untuk pembelian pertama.</p>
+                                <span class="btn btn-light text-info fw-bold rounded-pill px-4 shadow-sm" style="width: fit-content;">
+                                    Daftar Sekarang <i class="bi bi-person-plus-fill ms-2"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                @else
+                    {{-- Opsional: Tampilan card lain untuk user yang sudah login --}}
+                    <div class="card bg-success border-0 position-relative overflow-hidden promo-card" style="min-height: 220px;">
+                        <div class="card-body d-flex flex-column justify-content-center px-4 text-white">
+                            <h3 class="fw-bold">Selamat Datang, {{ Auth::user()->name }}!</h3>
+                            <p class="opacity-75">Cek pesanan terbaru atau lanjutkan belanja koleksi tanaman kami.</p>
+                            <a href="{{ route('orders.index') }}" class="btn btn-light text-success fw-bold rounded-pill px-4" style="width: fit-content;">Riwayat Pesanan</a>
                         </div>
                     </div>
-                </div>
+                @endguest
             </div>
         </div>
-    </section>
-
+    </div>
+</section>
     {{-- Produk Terbaru --}}
     <section class="py-5">
         <div class="container">
             <h2 class=" mb-4">Produk Terbaru</h2>
-            <div class="row g-4">
+            <div class="row g-4 ">
                 @foreach($latestProducts as $product)
                     <div class="col-6 col-md-4 col-lg-3">
                         @include('partials.product-card', ['product' => $product])
@@ -138,70 +164,24 @@
     </section>
 @endsection
 <style>
-    /* 8. Portrait Category Card Style */
-    
-    .category-card-portrait {
-        border-radius: 15px !important;
-        overflow: hidden;
-        background: #ffffff;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .category-img-wrapper {
-        width: 100%;
-        /* Mengatur proporsi kotak agak tinggi (Portrait) */
-        aspect-ratio: 4 / 5; 
-        overflow: hidden;
-        background: #f8f9fa;
-    }
-
-    .img-square {
-        width: 100%;
-        height: 100%;
-        object-fit: cover; /* Foto tetap proporsional meski kotak */
-        transition: transform 0.5s ease;
-    }
-
-    /* Animasi Hover Baru */
-    .group-category:hover .img-square {
-        transform: scale(1.1);
-    }
-
-    .group-category:hover .category-card-portrait {
-        border-color: #6ab04c !important;
-        box-shadow: 0 10px 25px rgba(45, 66, 45, 0.15) !important;
-    }
-
-    /* Tombol Mini di bawah teks */
-    .btn-explore-mini {
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: #6ab04c;
-        letter-spacing: 0.5px;
-        opacity: 0.7;
-        transition: all 0.3s ease;
-    }
-
-    .group-category:hover .btn-explore-mini {
-        opacity: 1;
-        letter-spacing: 1px;
-    }
-    
-    /* 1. Global & Typography */
+    .promo-card { transition: all 0.4s ease; cursor: pointer; }
+    .promo-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+   
+    /* 1. GLOBAL & TYPOGRAPHY 
+       Mengatur dasar tampilan halaman agar terlihat bersih dan profesional. */
     body {
-        background-color: #fdfcf8;
+        background-color: #fdfcf8; /* Warna krem lembut agar mata tidak cepat lelah */
         color: #2d3436;
         font-family: 'Inter', sans-serif;
     }
 
     h2 {
-        color: #2d422d;
+        color: #2d422d; /* Hijau tua khas alam */
         font-weight: 800;
         position: relative;
     }
 
+    /* Menambahkan icon daun setelah judul secara otomatis */
     h2::after {
         content: '🍃';
         font-size: 1rem;
@@ -209,7 +189,8 @@
         vertical-align: middle;
     }
 
-    /* 2. Hero Section & Text Wrapper */
+    /* 2. HERO SECTION 
+       Bagian utama (Header) dengan background gambar dan gradasi gelap agar teks terbaca jelas. */
     .bg-secondary {
         background: linear-gradient(rgba(45, 66, 45, 0.8), rgba(20, 30, 20, 0.9)), 
                     url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80') !important;
@@ -220,24 +201,26 @@
 
     .hero-text-wrapper {
         padding-right: 20px;
-        animation: fadeInUp 1s ease-out;
+        animation: fadeInUp 1s ease-out; /* Animasi teks muncul dari bawah */
     }
 
     .bg-secondary h1 {
-        color: #eccc68;
+        color: #eccc68; /* Warna kuning emas untuk highlight */
         text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
 
     .text-accent { color: #eccc68; }
     .text-light-green { color: #d1d8d1; font-weight: 300; }
 
-    /* 3. Hero Image & Animations */
+    /* 3. HERO IMAGES & ANIMATIONS
+       Efek visual pada gambar utama di bagian Hero. */
     .image-nature-wrapper {
         position: relative;
         display: inline-block;
         padding: 20px;
     }
 
+    /* Animasi Morphing: Mengubah border-radius secara dinamis agar gambar terlihat 'hidup' */
     .nature-hero-img {
         max-height: 400px;
         width: 100%;
@@ -247,6 +230,7 @@
         animation: morphing 10s ease-in-out infinite;
     }
 
+    /* Badge melayang di atas gambar hero */
     .floating-badge-cute {
         position: absolute;
         top: 10%;
@@ -276,7 +260,8 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 4. Cards & Banners */
+    /* 4. CARDS (UMUM) 
+       Berlaku untuk kartu produk dan kategori. */
     .card.border-0.shadow-sm, .row.g-4 .card {
         background-color: #ffffff;
         border-radius: 20px !important;
@@ -287,24 +272,75 @@
 
     .card.border-0.shadow-sm:hover {
         background-color: #f1f8e9;
-        transform: translateY(-8px);
+        transform: translateY(-8px); /* Efek kartu naik saat kursor diarahkan */
         box-shadow: 0 10px 20px rgba(106, 176, 76, 0.15) !important;
     }
+
+    /* 5. KATEGORI POPULER (PORTRAIT)
+       Khusus untuk bagian kategori dengan bentuk memanjang ke bawah. */
+    .category-card-portrait {
+        display: flex;
+        flex-direction: column;
+        border-radius: 15px !important;
+    }
+
+    .category-img-wrapper {
+        width: 100%;
+        aspect-ratio: 4 / 5; /* Memaksa gambar tetap portrait 4:5 */
+        overflow: hidden;
+        background: #f8f9fa;
+    }
+
+    .img-square {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    /* Efek Zoom-in pada gambar saat hover */
+    .group-category:hover .img-square {
+        transform: scale(1.1);
+    }
+
+    .group-category:hover .category-card-portrait {
+        border-color: #6ab04c !important;
+        box-shadow: 0 10px 25px rgba(45, 66, 45, 0.15) !important;
+        transform: translateY(-5px);
+    }
+
+    .btn-explore-mini {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #6ab04c;
+        letter-spacing: 0.5px;
+        opacity: 0.7;
+        transition: all 0.3s ease;
+    }
+
+    .group-category:hover .btn-explore-mini {
+        opacity: 1;
+        letter-spacing: 1px;
+    }
+
+    /* 6. BANNER & BACKGROUNDS
+       Gaya untuk badge promo dan banner Flash Sale. */
+    .card.bg-warning { background: linear-gradient(135deg, #e67e22, #d35400) !important; color: white !important; }
+    .card.bg-info { background: linear-gradient(135deg, #27ae60, #16a085) !important; color: white !important; }
+    .bg-light { background-color: #f1f2f6 !important; }
 
     .badge-promo {
         display: inline-block;
         background: rgba(255, 255, 255, 0.2);
         padding: 5px 15px;
         border-radius: 50px;
-        backdrop-filter: blur(5px);
+        backdrop-filter: blur(5px); /* Efek kaca transparan (Glassmorphism) */
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
-    .card.bg-warning { background: linear-gradient(135deg, #e67e22, #d35400) !important; color: white !important; }
-    .card.bg-info { background: linear-gradient(135deg, #27ae60, #16a085) !important; color: white !important; }
-    .bg-light { background-color: #f1f2f6 !important; }
-
-    /* 5. Buttons */
+    /* 7. BUTTONS
+       Kustomisasi tombol agar sesuai dengan tema alam. */
     .btn-nature-primary {
         background-color: #6ab04c !important;
         color: #ffffff !important;
@@ -322,16 +358,7 @@
     }
 
     .btn-nature-primary i { color: #eccc68; transition: transform 0.3s ease; }
-    .btn-nature-primary:hover i { transform: scale(1.2); color: #ffffff; }
-
-    .btn-outline-nature {
-        background: transparent;
-        color: white !important;
-        border: 2px solid rgba(255, 255, 255, 0.5);
-        border-radius: 12px;
-    }
-
-    .btn-outline-nature:hover { background: rgba(255, 255, 255, 0.1); border-color: white; }
+    .btn-nature-primary:hover i { transform: scale(1.2); }
 
     .btn-light {
         background-color: #ffffff;
@@ -341,10 +368,8 @@
 
     .btn-light:hover { background-color: #6ab04c; color: white !important; }
 
-    .btn-outline-primary { color: #27ae60; border-color: #27ae60; }
-    .btn-outline-primary:hover { background-color: #27ae60; color: white; }
-
-    /* 6. Utilities */
+    /* 8. UTILITIES & RESPONSIVE
+       Pengaturan jarak dan tampilan di perangkat mobile. */
     .gap-3 { gap: 1rem !important; }
     .shadow { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important; }
 
