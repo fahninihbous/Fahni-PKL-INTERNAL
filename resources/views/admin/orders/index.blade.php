@@ -54,9 +54,9 @@
                                 @elseif($order->status == 'processing')
                                     <span class="badge bg-info text-dark">Diproses</span>
                                 @elseif($order->status == 'completed')
-                                    <span class="badge bg-success">Selesai</span>
+                                    <span class="badge bg-success text-dark">Selesai</span>
                                 @elseif($order->status == 'cancelled')
-                                    <span class="badge bg-danger">Batal</span>
+                                    <span class="badge bg-  ` text-white">Batal</span>
                                 @endif
                             </td>
                             <td class="text-end pe-4">

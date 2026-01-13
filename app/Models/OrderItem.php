@@ -18,6 +18,12 @@ class OrderItem extends Model
         'subtotal',
     ];
 
+    // Penting agar angka harga tidak dibulatkan secara salah oleh PHP
+    protected $casts = [
+        'price' => 'decimal:2',
+        'subtotal' => 'decimal:2',
+    ];
+
     public function order()
     {
         return $this->belongsTo(Order::class);

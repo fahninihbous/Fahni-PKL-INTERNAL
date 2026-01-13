@@ -12,7 +12,6 @@ class CartItem extends Model
         'quantity',
     ];
 
-    // ⬇️ Supaya atribut subtotal bisa dipanggil di Blade
     protected $appends = ['subtotal'];
 
     public function cart()
@@ -26,12 +25,11 @@ class CartItem extends Model
     }
 
     /**
-     * Accessor: hitung subtotal otomatis
-     * Dipakai di Blade: $item->subtotal
+     * Accessor: hitung subtotal otomatis menggunakan harga diskon (display_price)
      */
     public function getSubtotalAttribute()
     {
-        // Pastikan field harga produk sesuai (price)
-        return $this->quantity * $this->product->price;
+        // Mengambil display_price dari model Product yang sudah menghandle logika diskon
+        return $this->quantity * $this->product->display_price;
     }
 }

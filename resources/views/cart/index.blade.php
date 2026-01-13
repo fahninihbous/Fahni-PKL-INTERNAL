@@ -111,9 +111,12 @@
                             <span>Total Barang</span>
                             <span class="fw-medium text-dark">{{ $cart->items->sum('quantity') }} Unit</span>
                         </div>
+                        
                         <div class="d-flex justify-content-between mb-4 text-muted">
                             <span>Subtotal</span>
-                            <span class="fw-medium text-dark">Rp {{ number_format($cart->items->sum('subtotal'), 0, ',', '.') }}</span>
+                            <span class="fw-medium text-dark">
+                                Rp {{ number_format($cart->items->sum('subtotal'), 0, ',', '.') }}
+                            </span>
                         </div>
                         
                         <div class="bg-light p-3 rounded-3 mb-4 border border-dashed border-secondary border-opacity-25">
@@ -128,10 +131,7 @@
                         <a href="{{ route('checkout.index') }}" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm mb-2 transition-up">
                             Lanjut ke Pembayaran <i class="bi bi-arrow-right-short ms-2"></i>
                         </a>
-                        
-                        <div class="text-center mt-3">
-                            <p class="small text-muted"><i class="bi bi-shield-check me-1 text-success"></i> Pembayaran Aman & Terenkripsi</p>
-                        </div>
+                        ...
                     </div>
                 </div>
             </div>

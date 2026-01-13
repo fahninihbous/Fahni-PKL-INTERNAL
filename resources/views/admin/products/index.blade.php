@@ -262,7 +262,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold small">Berat (Gram)</label>
-                            <input type="number" name="weight" class="form-control bg-light border-0" value="{{ old('weight') }}" placeholder="0" required>
+                            <input type="text" name="weight" class="form-control bg-light border-0" value="{{ old('weight') }}" placeholder="0" required>
                         </div>
                     </div>
                     <div class="mb-3">
